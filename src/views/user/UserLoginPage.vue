@@ -1,3 +1,4 @@
+/* eslint-disable */
 <template>
   <div id="userLoginPage">
     <h2 style="margin-bottom: 16px">用户登录</h2>
@@ -43,29 +44,39 @@ import { userLoginUsingPost } from "@/api/userController";
 import { useLoginUserStore } from "@/store/userStore";
 import message from "@arco-design/web-vue/es/message";
 import { useRouter } from "vue-router";
+import { ref } from "vue";
+import { useRoute } from "vue-router";
 
 const loginUserStore = useLoginUserStore();
 const router = useRouter();
+const route = useRoute();
 
 const form = reactive({
   userAccount: "",
   userPassword: "",
 } as API.UserLoginRequest);
 
+const loading = ref(false);
+
 /**
  * 提交
  */
 const handleSubmit = async () => {
-  const res = await userLoginUsingPost(form);
-  if (res.data.code === 0) {
-    await loginUserStore.fetchLoginUser();
-    message.success("登录成功");
-    router.push({
-      path: "/",
-      replace: true,
-    });
-  } else {
-    message.error("登录失败，" + res.data.message);
+  try {
+    loading.value = true;
+    const res = await userLoginUsingPost(form);
+    if (res.data?.code === 0) {
+      message.success("登录成功");
+      await loginUserStore.getLoginUser();
+      const redirect = (route.query?.redirect as string) ?? "/";
+      await router.push(redirect);
+    } else {
+      message.error(res.data?.message ?? "登录失败");
+    }
+  } catch (error) {
+    message.error("登录失败");
+  } finally {
+    loading.value = false;
   }
 };
 </script>

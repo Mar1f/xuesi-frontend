@@ -12,22 +12,22 @@
           >
             <a-menu-item key="dashboard">
               <router-link to="/dashboard">
-                <dashboard-outlined />
+                <icon-dashboard />
                 仪表盘
               </router-link>
             </a-menu-item>
             <a-sub-menu>
-              <template #icon><setting-outlined /></template>
+              <template #icon><icon-settings /></template>
               <template #title>系统管理</template>
               <a-menu-item key="user">
                 <router-link to="/admin/user">
-                  <user-outlined />
+                  <icon-user />
                   用户管理
                 </router-link>
               </a-menu-item>
               <a-menu-item key="class">
                 <router-link to="/admin/class">
-                  <team-outlined />
+                  <icon-user-group />
                   班级管理
                 </router-link>
               </a-menu-item>
@@ -37,37 +37,39 @@
         <div class="header-right">
           <a-space size="large">
             <a-badge count="5">
-              <bell-outlined class="header-icon" />
+              <icon-notification class="header-icon" />
             </a-badge>
             <a-dropdown>
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item key="profile">
-                    <router-link to="/user/profile">
-                      <user-outlined />
-                      个人信息
-                    </router-link>
-                  </a-menu-item>
-                  <a-menu-item key="settings">
-                    <setting-outlined />
-                    系统设置
-                  </a-menu-item>
-                  <a-menu-divider />
-                  <a-menu-item key="logout" @click="handleLogout">
-                    <logout-outlined />
-                    退出登录
-                  </a-menu-item>
-                </a-menu>
-              </template>
-              <div class="admin-dropdown">
+              <div class="admin-dropdown" trigger="click">
                 <a-avatar class="avatar">
-                  {{ loginUserStore.loginUser?.userName?.[0] || "A" }}
+                  {{
+                    loginUserStore.loginUser?.id
+                      ? loginUserStore.loginUser?.userName?.[0] || "无"
+                      : "未"
+                  }}
                 </a-avatar>
                 <span class="username">{{
-                  loginUserStore.loginUser?.userName || "未登录"
+                  loginUserStore.loginUser?.userName
                 }}</span>
-                <down-outlined />
+                <icon-down />
               </div>
+              <template #content>
+                <a-doption>
+                  <router-link to="/user/profile">
+                    <icon-user />
+                    个人信息
+                  </router-link>
+                </a-doption>
+                <a-doption>
+                  <icon-settings />
+                  系统设置
+                </a-doption>
+                <a-divider style="margin: 4px 0" />
+                <a-doption @click="handleLogout">
+                  <icon-export />
+                  退出登录
+                </a-doption>
+              </template>
             </a-dropdown>
           </a-space>
         </div>
@@ -98,19 +100,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useLoginUserStore } from "@/store/userStore";
 import {
-  DashboardOutlined,
-  UserOutlined,
-  TeamOutlined,
-  SettingOutlined,
-  BellOutlined,
-  LogoutOutlined,
-  DownOutlined,
-} from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
+  IconDashboard,
+  IconUser,
+  IconUserGroup,
+  IconSettings,
+  IconNotification,
+  IconExport,
+  IconDown,
+} from "@arco-design/web-vue/es/icon";
+import { Message } from "@arco-design/web-vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -134,13 +136,31 @@ const currentRoute = computed(() => {
 // 根据当前路由设置选中的菜单项
 selectedKeys.value = [route.path.split("/")[2] || "dashboard"];
 
+// 监听路由变化，确保用户信息已加载
+watch(
+  () => route.path,
+  async () => {
+    if (
+      !loginUserStore.loginUser?.userName ||
+      loginUserStore.loginUser.userName === "未登录"
+    ) {
+      await loginUserStore.getLoginUser();
+    }
+  }
+);
+
+// 组件挂载时获取用户信息
+onMounted(async () => {
+  await loginUserStore.getLoginUser();
+});
+
 const handleLogout = async () => {
   try {
     await loginUserStore.logout();
-    message.success("退出成功");
+    Message.success("退出成功");
     router.push("/user/login");
   } catch (error) {
-    message.error("退出失败");
+    Message.error("退出失败");
   }
 };
 </script>
@@ -231,7 +251,6 @@ const handleLogout = async () => {
         cursor: pointer;
         transition: all 0.3s;
         color: rgba(255, 255, 255, 0.85);
-        text-decoration: none;
 
         &:hover {
           background: rgba(255, 255, 255, 0.1);
@@ -247,16 +266,24 @@ const handleLogout = async () => {
           margin-right: @spacing-small;
           color: rgba(255, 255, 255, 0.85);
         }
+
+        .arco-icon {
+          font-size: 12px;
+          margin-left: 4px;
+        }
       }
 
-      :deep(.ant-dropdown-menu) {
-        .anticon {
-          margin-right: 8px;
-        }
-
+      :deep(.arco-dropdown-option) {
         a {
           color: inherit;
           text-decoration: none;
+          display: flex;
+          align-items: center;
+          width: 100%;
+        }
+
+        .arco-icon {
+          margin-right: 8px;
         }
       }
     }
