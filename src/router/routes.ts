@@ -1,63 +1,67 @@
 import { RouteRecordRaw } from "vue-router";
-import HomeView from "@/views/HomeView.vue";
 import UserLayout from "@/layouts/UserLayout.vue";
+import AdminLayout from "@/layouts/AdminLayout.vue";
 import ACCESS_ENUM from "@/access/accessEnum";
 import NoAuthPage from "@/views/NoAuthPage.vue";
 import UserLoginPage from "@/views/user/UserLoginPage.vue";
 import UserRegisterPage from "@/views/user/UserRegisterPage.vue";
 import AdminUserPage from "@/views/admin/AdminUserPage.vue";
 import AdminClassPage from "@/views/admin/AdminClassPage.vue";
+import UserProfilePage from "@/views/user/UserProfilePage.vue";
+import DashboardPage from "@/views/admin/DashboardPage.vue";
 
 export const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
-  },
-  {
-    path: "/admin/user",
-    name: "用户管理",
-    component: AdminUserPage,
-    meta: {
-      access: ACCESS_ENUM.ADMIN,
-    },
-  },
-  {
-    path: "/admin/class",
-    name: "班级管理",
-    component: AdminClassPage,
-    meta: {
-      access: ACCESS_ENUM.ADMIN,
-    },
-  },
-  {
-    path: "/noAuth",
-    name: "无权限",
-    component: NoAuthPage,
-    meta: {
-      hideInMenu: true,
-    },
-  },
-  {
-    path: "/hide",
-    name: "隐藏页面",
-    component: HomeView,
-    meta: {
-      hideInMenu: true,
-    },
+    name: "首页",
+    component: AdminLayout,
+    redirect: "/dashboard",
+    children: [
+      {
+        path: "dashboard",
+        name: "仪表盘",
+        component: DashboardPage,
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: "admin/user",
+        name: "用户管理",
+        component: AdminUserPage,
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: "admin/class",
+        name: "班级管理",
+        component: AdminClassPage,
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: "user/profile",
+        name: "个人信息",
+        component: UserProfilePage,
+        meta: {
+          access: [ACCESS_ENUM.STUDENT, ACCESS_ENUM.TEACHER, ACCESS_ENUM.ADMIN],
+        },
+      },
+    ],
   },
   {
     path: "/user",
-    name: "用户",
     component: UserLayout,
     children: [
       {
-        path: "/user/login",
+        path: "login",
         name: "用户登录",
         component: UserLoginPage,
       },
       {
-        path: "/user/register",
+        path: "register",
         name: "用户注册",
         component: UserRegisterPage,
       },
@@ -67,12 +71,11 @@ export const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
+    path: "/noAuth",
+    name: "无权限",
+    component: NoAuthPage,
+    meta: {
+      hideInMenu: true,
+    },
   },
 ];

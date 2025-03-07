@@ -664,6 +664,7 @@ declare namespace API {
 
   type User = {
     createTime?: string;
+    gender?: number;
     id?: number;
     isDelete?: number;
     updateTime?: string;
@@ -756,6 +757,7 @@ declare namespace API {
 
   type UserQueryRequest = {
     current?: number;
+    gender?: number;
     id?: number;
     mpOpenId?: string;
     pageSize?: number;
@@ -769,7 +771,9 @@ declare namespace API {
 
   type UserRegisterRequest = {
     checkPassword?: string;
+    gender?: number;
     userAccount?: string;
+    userName?: string;
     userPassword?: string;
   };
 
@@ -780,6 +784,7 @@ declare namespace API {
   };
 
   type UserUpdateRequest = {
+    gender?: number;
     id?: number;
     userAvatar?: string;
     userName?: string;

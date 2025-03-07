@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { getLoginUserUsingGet } from "@/api/userController";
+import * as userController from "@/api/userController";
 import ACCESS_ENUM from "@/access/accessEnum";
 
 /**
@@ -11,18 +11,30 @@ export const useLoginUserStore = defineStore("loginUser", () => {
     userName: "未登录",
   });
 
-  function setLoginUser(newLoginUser: API.LoginUserVO) {
+  const setLoginUser = (newLoginUser: API.LoginUserVO) => {
     loginUser.value = newLoginUser;
-  }
+  };
 
-  async function fetchLoginUser() {
-    const res = await getLoginUserUsingGet();
-    if (res.data.code === 0 && res.data.data) {
-      loginUser.value = res.data.data;
-    } else {
-      loginUser.value = { userRole: ACCESS_ENUM.NOT_LOGIN };
+  const getLoginUser = async () => {
+    const res = await userController.getLoginUserUsingGet();
+    if (res.data?.code === 0) {
+      setLoginUser(res.data.data || {});
     }
-  }
+  };
 
-  return { loginUser, setLoginUser, fetchLoginUser };
+  const logout = async () => {
+    const res = await userController.userLogoutUsingPost();
+    if (res.data?.code === 0) {
+      setLoginUser({});
+      return true;
+    }
+    return false;
+  };
+
+  return {
+    loginUser,
+    setLoginUser,
+    getLoginUser,
+    logout,
+  };
 });

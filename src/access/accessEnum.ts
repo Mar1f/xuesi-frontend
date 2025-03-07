@@ -3,7 +3,8 @@
  */
 const ACCESS_ENUM = {
   NOT_LOGIN: "notLogin",
-  USER: "user",
+  STUDENT: "student",
+  TEACHER: "teacher",
   ADMIN: "admin",
 };
 

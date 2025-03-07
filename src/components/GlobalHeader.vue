@@ -21,9 +21,33 @@
         </a-menu-item>
       </a-menu>
     </a-col>
-    <a-col flex="100px">
-      <div v-if="loginUserStore.loginUser.id">
-        {{ loginUserStore.loginUser.userName ?? "无名" }}
+    <a-col flex="160px">
+      <div v-if="loginUserStore.loginUser.id" class="user-info">
+        <a-dropdown trigger="hover">
+          <div class="user-dropdown-link">
+            <a-avatar :size="32" style="margin-right: 8px">
+              {{ loginUserStore.loginUser.userName?.[0] ?? "U" }}
+            </a-avatar>
+            <span class="username">{{
+              loginUserStore.loginUser.userName ?? "无名"
+            }}</span>
+            <down-outlined style="margin-left: 4px" />
+          </div>
+          <template #content>
+            <a-doption>
+              <template #icon>
+                <user-outlined />
+              </template>
+              <a @click="goToProfile">个人信息</a>
+            </a-doption>
+            <a-doption>
+              <template #icon>
+                <logout-outlined />
+              </template>
+              <a @click="handleLogout">退出登录</a>
+            </a-doption>
+          </template>
+        </a-dropdown>
       </div>
       <div v-else>
         <a-button type="primary" href="/user/login">登录</a-button>
@@ -38,12 +62,19 @@ import { useRouter } from "vue-router";
 import { computed, ref } from "vue";
 import { useLoginUserStore } from "@/store/userStore";
 import checkAccess from "@/access/checkAccess";
+import { Modal } from "ant-design-vue";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  DownOutlined,
+} from "@ant-design/icons-vue";
 
 const loginUserStore = useLoginUserStore();
-
 const router = useRouter();
+
 // 当前选中的菜单项
 const selectedKeys = ref(["/"]);
+
 // 路由跳转时，自动更新选中的菜单项
 router.afterEach((to, from, failure) => {
   selectedKeys.value = [to.path];
@@ -69,10 +100,36 @@ const doMenuClick = (key: string) => {
     path: key,
   });
 };
+
+// 跳转到个人信息页面
+const goToProfile = () => {
+  router.push("/user/profile");
+};
+
+// 处理退出登录
+const handleLogout = () => {
+  Modal.confirm({
+    title: "确认退出",
+    content: "您确定要退出登录吗？",
+    okText: "确认",
+    cancelText: "取消",
+    onOk: async () => {
+      try {
+        // 清除用户信息
+        loginUserStore.setLoginUser({});
+        // 跳转到登录页
+        router.push("/user/login");
+      } catch (error) {
+        console.error("退出登录失败", error);
+      }
+    },
+  });
+};
 </script>
 
 <style scoped>
 #globalHeader {
+  padding: 0 24px;
 }
 
 .titleBar {
@@ -87,5 +144,32 @@ const doMenuClick = (key: string) => {
 
 .logo {
   height: 48px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.user-dropdown-link {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.user-dropdown-link:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.username {
+  max-width: 80px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>
